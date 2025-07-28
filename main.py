@@ -45,5 +45,10 @@ def check_opportunities():
         error_html = f"<p><strong>API request failed:</strong> {str(e)}</p>"
         return Response(error_html, mimetype='text/html')
 
+# ✅ Add this health check route for uptime monitors
+@app.route('/health')
+def health():
+    return 'OK', 200
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
