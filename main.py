@@ -11,7 +11,7 @@ def check_opportunities():
     if not api_key:
         return Response("<p><strong>Error:</strong> SAM.gov API key not configured.</p>", mimetype='text/html')
 
-    posted_from = (datetime.utcnow() - timedelta(days=2)).strftime("%m/%d/%Y")
+    posted_from = (datetime.utcnow() - timedelta(days=14)).strftime("%m/%d/%Y")
     posted_to = datetime.utcnow().strftime("%m/%d/%Y")
 
     url = "https://api.sam.gov/opportunities/v2/search"
@@ -32,12 +32,28 @@ def check_opportunities():
             return Response("<p>No new opportunities found.</p>", mimetype='text/html')
 
         html = "<h3>Today's filtered opportunities from SAM.gov:</h3><ul>"
+
+        # ✅ Define allowed NAICS codes
+        target_naics = {
+            "541613", "541870", "518210", "541810", "541890",
+            "541430", "541820", "541511", "541830"
+        }
+
         for opp in opportunities:
+            opp_naics = opp.get("naicsCodes", [])
+            if not set(opp_naics) & target_naics:
+                continue  # Skip if no matching NAICS codes
+
             title = opp.get("title", "No title")
             link = opp.get("uiLink", "#")
-            naics_codes = ", ".join(opp.get("naicsCodes", []))
-            html += f'<li><a href="{link}" target="_blank">{title}</a><br><strong>NAICS:</strong> {naics_codes}</li><br>'
+            naics_str = ", ".join(opp_naics)
+
+            html += f'<li><a href="{link}" target="_blank">{title}</a><br><strong>NAICS:</strong> {naics_str}</li><br>'
+
         html += "</ul>"
+
+        if html == "<h3>Today's filtered opportunities from SAM.gov:</h3><ul></ul>":
+            return Response("<p>No matching NAICS codes found.</p>", mimetype='text/html')
 
         return Response(html, mimetype='text/html')
 
