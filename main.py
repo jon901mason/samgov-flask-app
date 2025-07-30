@@ -53,7 +53,8 @@ def check_opportunities():
         html += "</ul>"
 
         if html == "<h3>Today's filtered opportunities from SAM.gov:</h3><ul></ul>":
-            return Response("<p>No matching NAICS codes found.</p>", mimetype='text/html')
+            return Response("<p>No matching NAICS codes found. 541613, 541870, 518210, 541810, 541890,
+            541430, 541820, 541511, 541830</p>", mimetype='text/html')
 
         return Response(html, mimetype='text/html')
 
