@@ -11,7 +11,7 @@ def check_opportunities():
     if not api_key:
         return Response("<p><strong>Error:</strong> SAM.gov API key not configured.</p>", mimetype='text/html')
 
-    posted_from = (datetime.utcnow() - timedelta(days=14)).strftime("%m/%d/%Y")
+    posted_from = (datetime.utcnow() - timedelta(days=30)).strftime("%m/%d/%Y")
     posted_to = datetime.utcnow().strftime("%m/%d/%Y")
 
     url = "https://api.sam.gov/opportunities/v2/search"
