@@ -19,7 +19,7 @@ def check_opportunities():
         "api_key": api_key,
         "postedFrom": posted_from,
         "postedTo": posted_to,
-        "limit": 1000
+        "limit": 100
     }
 
     try:
@@ -33,6 +33,7 @@ def check_opportunities():
 
         html = "<h3>Today's filtered opportunities from SAM.gov:</h3><ul>"
 
+        # Define allowed NAICS codes
         target_naics = {
             "541613", "541870", "518210", "541810", "541890",
             "541430", "541820", "541511", "541830"
@@ -41,7 +42,7 @@ def check_opportunities():
         for opp in opportunities:
             opp_naics = opp.get("naicsCodes", [])
             if not set(opp_naics) & target_naics:
-                continue
+                continue  # Skip if no matching NAICS codes
 
             title = opp.get("title", "No title")
             link = opp.get("uiLink", "#")
@@ -60,6 +61,7 @@ def check_opportunities():
         error_html = f"<p><strong>API request failed:</strong> {str(e)}</p>"
         return Response(error_html, mimetype='text/html')
 
+# Add this health check route for uptime monitors
 @app.route('/health')
 def health():
     return 'OK', 200
