@@ -14,57 +14,63 @@ def check_opportunities():
     posted_from = (datetime.utcnow() - timedelta(days=30)).strftime("%m/%d/%Y")
     posted_to = datetime.utcnow().strftime("%m/%d/%Y")
 
-    url = "https://api.sam.gov/prod/opportunities/v2/search"
-    params = {
-        "api_key": api_key,
-        "postedFrom": posted_from,
-        "postedTo": posted_to,
-        "limit": 100
+    url = "https://api.sam.gov/opportunities/v2/search"  # ✅ Corrected to v2
+    limit = 100
+    max_pages = 5  # 5 pages × 100 results = 500 max
+
+    target_naics = {
+        "541613", "541870", "518210", "541810", "541890",
+        "541430", "541820", "541511", "541830"
     }
 
+    html = "<h3>Filtered opportunities from SAM.gov (past 30 days):</h3><ul>"
+    found_match = False
+
     try:
-        response = requests.get(url, params=params)
-        response.raise_for_status()
-        data = response.json()
+        for page in range(max_pages):
+            start = page * limit
+            params = {
+                "api_key": api_key,
+                "postedFrom": posted_from,
+                "postedTo": posted_to,
+                "start": start,
+                "limit": limit
+            }
 
-        opportunities = data.get("opportunitiesData", [])
-        if not opportunities:
-            return Response("<p>No new opportunities found.</p>", mimetype='text/html')
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            data = response.json()
+            opportunities = data.get("opportunitiesData", [])
 
-        html = "<h3>Today's filtered opportunities from SAM.gov:</h3><ul>"
+            if not opportunities:
+                break  # No more data
 
-        # ✅ Define allowed NAICS codes
-        target_naics = {
-            "541613", "541870", "518210", "541810", "541890",
-            "541430", "541820", "541511", "541830"
-        }
+            for opp in opportunities:
+                opp_naics = opp.get("naicsCodes", [])
+                if not set(opp_naics) & target_naics:
+                    continue
 
-        for opp in opportunities:
-            opp_naics = opp.get("naicsCodes", [])
-            if not set(opp_naics) & target_naics:
-                continue  # Skip if no matching NAICS codes
-
-            title = opp.get("title", "No title")
-            link = opp.get("uiLink", "#")
-            naics_str = ", ".join(opp_naics)
-
-            html += f'<li><a href="{link}" target="_blank">{title}</a><br><strong>NAICS:</strong> {naics_str}</li><br>'
+                found_match = True
+                title = opp.get("title", "No title")
+                link = opp.get("uiLink", "#")
+                naics_str = ", ".join(opp_naics)
+                html += f'<li><a href="{link}" target="_blank">{title}</a><br><strong>NAICS:</strong> {naics_str}</li><br>'
 
         html += "</ul>"
 
-        if html == "<h3>Today's filtered opportunities from SAM.gov:</h3><ul></ul>":
-            return Response("<p>No matching NAICS codes found. 541613-541870-518210-541810-541890-541430-541820-541511-541830</p>", mimetype='text/html')
+        if not found_match:
+            return Response("<p>No matching NAICS codes found. 541613–541870–518210–541810–541890–541430–541820–541511–541830</p>", mimetype='text/html')
 
         return Response(html, mimetype='text/html')
 
     except requests.exceptions.RequestException as e:
-        error_html = f"<p><strong>API request failed:</strong> {str(e)}</p>"
-        return Response(error_html, mimetype='text/html')
+        return Response(f"<p><strong>API request failed:</strong> {str(e)}</p>", mimetype='text/html')
 
-# ✅ Add this health check route for uptime monitors
+
 @app.route('/health')
 def health():
     return 'OK', 200
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
