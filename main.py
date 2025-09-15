@@ -19,7 +19,7 @@ def check_opportunities():
         "api_key": api_key,
         "postedFrom": posted_from,
         "postedTo": posted_to,
-        "limit": 1000
+        "limit": 100
     }
 
     try:
