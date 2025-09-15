@@ -14,7 +14,7 @@ def check_opportunities():
     posted_from = (datetime.utcnow() - timedelta(days=30)).strftime("%m/%d/%Y")
     posted_to = datetime.utcnow().strftime("%m/%d/%Y")
 
-    url = "https://api.sam.gov/opportunities/v2/search"  # ✅ Corrected to v2
+    url = "https://api.sam.gov/opportunities/v2/search"  
     limit = 100
     max_pages = 5  # 5 pages × 100 results = 500 max
 
