@@ -14,7 +14,7 @@ def check_opportunities():
     posted_from = (datetime.utcnow() - timedelta(days=30)).strftime("%m/%d/%Y")
     posted_to = datetime.utcnow().strftime("%m/%d/%Y")
 
-    url = "https://api.sam.gov/prod/opportunities/v1/search"
+    url = "https://api.sam.gov/prod/opportunities/v2/search"
     params = {
         "api_key": api_key,
         "postedFrom": posted_from,
